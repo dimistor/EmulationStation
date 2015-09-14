@@ -188,6 +188,7 @@ void Window::render()
 
 	if(isSleeping())
 	{
+		mDemoVideo->setResize((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight());
 		mDemoVideo->render(transform);
 		return;
 	}
