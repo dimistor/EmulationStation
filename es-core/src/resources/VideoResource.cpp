@@ -46,7 +46,7 @@ VideoResource::VideoResource()
 
 	av_init_packet(&mPacket);
 	mPacket.data = NULL;
-	mPacketDataOffset = 0;
+	mPacketDataOffset = mPacket.size;
 }
 
 void VideoResource::open(const std::string& path)
@@ -93,6 +93,12 @@ void VideoResource::open(const std::string& path)
 
 	// get the first frame
 	readNextFrame();
+}
+
+void flipPicture(AVPicture &pic, int height)
+{
+	pic.data[0] += pic.linesize[0] * (height - 1);
+	pic.linesize[0] = -pic.linesize[0];
 }
 
 // This function is kind of ugly.
@@ -155,7 +161,12 @@ void VideoResource::readNextFrame()
 				frame->width, frame->height, PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL, NULL);
 			assert(swsCtx);
 
+			// flip picture
+			flipPicture(pic, frame->height);
+			// actual pixel format conversion
 			sws_scale(swsCtx, frame->data, frame->linesize, 0, frame->height, pic.data, pic.linesize);
+			// unflip picture
+			flipPicture(pic, frame->height);
 
 			// update texture
 			glBindTexture(GL_TEXTURE_2D, mTexture);

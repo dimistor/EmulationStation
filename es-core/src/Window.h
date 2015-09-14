@@ -7,6 +7,7 @@
 
 class HelpComponent;
 class ImageComponent;
+class VideoComponent;
 
 class Window
 {
@@ -31,7 +32,7 @@ public:
 	inline bool isSleeping() const { return mSleeping; }
 	bool getAllowSleep();
 	void setAllowSleep(bool sleep);
-	
+
 	void renderLoadingScreen();
 
 	void renderHelpPromptsEarly(); // used to render HelpPrompts before a fade
@@ -42,6 +43,7 @@ private:
 	void onWake();
 
 	HelpComponent* mHelp;
+	VideoComponent* mDemoVideo;
 	ImageComponent* mBackgroundOverlay;
 
 	std::vector<GuiComponent*> mGuiStack;
