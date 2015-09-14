@@ -148,7 +148,7 @@ set(COMMON_LIBRARIES
     ${Boost_LIBRARIES}
     ${FREETYPE_LIBRARIES}
     ${FreeImage_LIBRARIES}
-	${SDL2_LIBRARY}
+    ${SDL2_LIBRARY}
     ${CURL_LIBRARIES}
     ${FFMPEG_LIBRARIES}
     pugixml
@@ -189,7 +189,7 @@ endif()
 
 #-------------------------------------------------------------------------------
 # set up build directories
-set(dir ${CMAKE_CURRENT_SOURCE_DIR})
+set(dir ${CMAKE_SOURCE_DIR}/${CMAKE_BUILD_TYPE})
 set(EXECUTABLE_OUTPUT_PATH ${dir} CACHE PATH "Build directory" FORCE)
 set(LIBRARY_OUTPUT_PATH ${dir} CACHE PATH "Build directory" FORCE)
 
