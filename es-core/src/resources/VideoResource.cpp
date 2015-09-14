@@ -8,27 +8,27 @@
 
 bool VideoResource::sInitializedLibrary = false;
 
-void ffmpeg_log(void* ptr, int level, const char* fmt, va_list vl)
-{
-	const size_t BUFF_SIZE = 1024 * 2;
-	char line[BUFF_SIZE];
-	int printBuffer = 1;
-	av_log_format_line(ptr, level, fmt, vl, line, BUFF_SIZE, &printBuffer);
-	LOG(LogInfo) << "(ffmpeg " << level << "): " << line;
-}
+// void ffmpeg_log(void* ptr, int level, const char* fmt, va_list vl)
+// {
+// 	const size_t BUFF_SIZE = 1024 * 2;
+// 	char line[BUFF_SIZE];
+// 	int printBuffer = 1;
+// 	av_log_format_line(ptr, level, fmt, vl, line, BUFF_SIZE, &printBuffer);
+// 	LOG(LogInfo) << "(ffmpeg " << level << "): " << line;
+// }
 
-void LogFFmpegError(int errorCode)
-{
-	static char err[1024];
-	LOG(LogError) << "error processing frame?! " << av_make_error_string(err, 1024, errorCode);
-}
+// void LogFFmpegError(int errorCode)
+// {
+// 	static char err[1024];
+// 	LOG(LogError) << "error processing frame?! " << av_make_error_string(err, 1024, errorCode);
+// }
 
 void VideoResource::loadLibrary()
 {
 	assert(!sInitializedLibrary);
 	av_register_all();
 
-	av_log_set_callback(&ffmpeg_log);
+	// av_log_set_callback(&ffmpeg_log);
 
 	sInitializedLibrary = true;
 }
@@ -101,7 +101,7 @@ void VideoResource::open(const std::string& path)
 // to send the remaining bytes in the packet into the next decode_video call.
 void VideoResource::readNextFrame()
 {
-	AVFrame* frame = av_frame_alloc();
+	AVFrame* frame = avcodec_alloc_frame();
 
 	// read packets until we have the next video frame decoded
 	while(true)
@@ -119,7 +119,7 @@ void VideoResource::readNextFrame()
 			if(err < 0)
 			{
 				LOG(LogInfo) << "av_read_frame returned " << err << ", EOF?";
-				av_frame_free(&frame);
+				avcodec_free_frame(&frame);
 				return;
 			}
 		}
@@ -135,7 +135,8 @@ void VideoResource::readNextFrame()
 
 		if(processedLength < 0)
 		{
-			LogFFmpegError(processedLength);
+			// LogFFmpegError(processedLength);
+			LOG(LogError) << "error processing frame?!";
 			break;
 		}
 
@@ -168,7 +169,7 @@ void VideoResource::readNextFrame()
 		}
 	}
 
-	av_frame_free(&frame);
+	avcodec_free_frame(&frame);
 }
 
 int64_t VideoResource::msToNextFrame() const
@@ -179,7 +180,7 @@ int64_t VideoResource::msToNextFrame() const
 void VideoResource::advance(unsigned int ms)
 {
 	mTimeAccumulator += ms;
-	
+
 	int framesRead = 0;
 	while(msToNextFrame() <= mTimeAccumulator && framesRead < 8)
 	{
