@@ -4,6 +4,7 @@
 #include "AudioManager.h"
 #include "Log.h"
 #include "Settings.h"
+#include "platform.h"
 #include <iomanip>
 #include "components/HelpComponent.h"
 #include "components/ImageComponent.h"
@@ -172,6 +173,12 @@ void Window::update(int deltaTime)
 
 	if(isSleeping())
 	{
+		if(!mDemoVideo->isPlaying())
+		{
+			onWake();
+			onSleep();
+			return;
+		}
 		mDemoVideo->update(deltaTime);
 		return;
 	}
@@ -344,10 +351,10 @@ void Window::onSleep()
 	// Renderer::setMatrix(Eigen::Affine3f::Identity());
 	// unsigned char opacity = Settings::getInstance()->getString("ScreenSaverBehavior") == "dim" ? 0xA0 : 0xFF;
 	// Renderer::drawRect(0, 0, Renderer::getScreenWidth(), Renderer::getScreenHeight(), 0x00000000 | opacity);
-	mDemoVideo->setVideo("../data/sample_720p.mp4");
+	mDemoVideo->setVideo(getHomePath() + "/.emulationstation/video/sample.mp4");
 }
 
 void Window::onWake()
 {
-
+	mDemoVideo->closeVideo();
 }

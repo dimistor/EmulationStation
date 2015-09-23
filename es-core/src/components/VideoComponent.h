@@ -10,6 +10,9 @@ public:
 	virtual ~VideoComponent();
 
 	void setVideo(const std::string& path);
+	void closeVideo();
+
+	bool isPlaying();
 
 	virtual void update(int deltaTime) override;
 	virtual void applyTheme(const std::shared_ptr<ThemeData>& theme, const std::string& view, const std::string& element, unsigned int properties) override;

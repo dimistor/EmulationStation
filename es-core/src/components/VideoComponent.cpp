@@ -15,6 +15,16 @@ void VideoComponent::setVideo(const std::string& path)
 	onTextureChanged();
 }
 
+void VideoComponent::closeVideo()
+{
+	mVideo.close();
+}
+
+bool VideoComponent::isPlaying()
+{
+	return mVideo.isPlaying();
+}
+
 Eigen::Vector2i VideoComponent::getTextureSize()
 {
 	return mVideo.getTextureSize();

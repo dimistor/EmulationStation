@@ -28,6 +28,7 @@ public:
 	GLuint getFrameTexture();
 
 	void close();
+	bool isPlaying();
 
 private:
 	static bool sInitializedLibrary;
@@ -46,4 +47,6 @@ private:
 
 	GLuint mTexture;
 	Eigen::Vector2i mTextureSize;
+
+	bool mIsPlaying;
 };

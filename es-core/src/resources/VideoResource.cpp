@@ -47,6 +47,8 @@ VideoResource::VideoResource()
 	av_init_packet(&mPacket);
 	mPacket.data = NULL;
 	mPacketDataOffset = mPacket.size;
+
+	mIsPlaying = false;
 }
 
 void VideoResource::open(const std::string& path)
@@ -91,6 +93,7 @@ void VideoResource::open(const std::string& path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+	mIsPlaying = true;
 	// get the first frame
 	readNextFrame();
 }
@@ -126,6 +129,7 @@ void VideoResource::readNextFrame()
 			{
 				LOG(LogInfo) << "av_read_frame returned " << err << ", EOF?";
 				avcodec_free_frame(&frame);
+				mIsPlaying = false;
 				return;
 			}
 		}
@@ -190,6 +194,9 @@ int64_t VideoResource::msToNextFrame() const
 
 void VideoResource::advance(unsigned int ms)
 {
+	if(!mIsPlaying)
+		return;
+
 	mTimeAccumulator += ms;
 
 	int framesRead = 0;
@@ -211,6 +218,8 @@ GLuint VideoResource::getFrameTexture()
 
 void VideoResource::close()
 {
+	mIsPlaying = false;
+
 	if(mFormatCtx)
 	{
 		// this function also sets mFormatCtx to NULL
@@ -220,6 +229,11 @@ void VideoResource::close()
 	if(mTexture)
 		glDeleteTextures(1, &mTexture);
 	mTexture = NULL;
+}
+
+bool VideoResource::isPlaying()
+{
+	return mIsPlaying;
 }
 
 VideoResource::~VideoResource()
