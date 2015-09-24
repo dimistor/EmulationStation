@@ -26,6 +26,7 @@ GuiMenu::GuiMenu(Window* window) : GuiComponent(window), mMenu(window, "MAIN MEN
 	// MAIN MENU
 
 	// SCRAPER >
+	// ARCADE SETTINGS >
 	// SOUND SETTINGS >
 	// UI SETTINGS >
 	// CONFIGURE INPUT >
@@ -42,8 +43,9 @@ GuiMenu::GuiMenu(Window* window) : GuiComponent(window), mMenu(window, "MAIN MEN
 		while(windowCopy->peekGui() != ViewController::get())
 			delete windowCopy->peekGui();
 	};
-	addEntry("SCRAPER", 0x777777FF, true, 
-		[this, openScrapeNow, importXMLAndClose] { 
+
+	addEntry("SCRAPER", 0x777777FF, true,
+		[this, openScrapeNow, importXMLAndClose] {
 			auto s = new GuiSettings(mWindow, "SCRAPER");
 
 			// scrape from
@@ -86,7 +88,20 @@ GuiMenu::GuiMenu(Window* window) : GuiComponent(window), mMenu(window, "MAIN MEN
 			mWindow->pushGui(s);
 	});
 
-	addEntry("SOUND SETTINGS", 0x777777FF, true, 
+	addEntry("ARCADE SETTINGS", 0x777777FF, true,
+		[this] {
+			auto s = new GuiSettings(mWindow, "ARCADE SETTINGS");
+
+			// free_play
+			auto free_play = std::make_shared<SwitchComponent>(mWindow);
+			free_play->setState(Settings::getInstance()->getBool("FreePlay"));
+			s->addWithLabel("FREE PLAY", free_play);
+			s->addSaveFunc([free_play] { Settings::getInstance()->setBool("FreePlay", free_play->getState()); });
+
+			mWindow->pushGui(s);
+	});
+
+	addEntry("SOUND SETTINGS", 0x777777FF, true,
 		[this] {
 			auto s = new GuiSettings(mWindow, "SOUND SETTINGS");
 
@@ -95,7 +110,7 @@ GuiMenu::GuiMenu(Window* window) : GuiComponent(window), mMenu(window, "MAIN MEN
 			volume->setValue((float)VolumeControl::getInstance()->getVolume());
 			s->addWithLabel("SYSTEM VOLUME", volume);
 			s->addSaveFunc([volume] { VolumeControl::getInstance()->setVolume((int)round(volume->getValue())); });
-			
+
 			// disable sounds
 			auto sounds_enabled = std::make_shared<SwitchComponent>(mWindow);
 			sounds_enabled->setState(Settings::getInstance()->getBool("EnableSounds"));
@@ -110,20 +125,10 @@ GuiMenu::GuiMenu(Window* window) : GuiComponent(window), mMenu(window, "MAIN MEN
 			auto s = new GuiSettings(mWindow, "UI SETTINGS");
 
 			// screensaver time
-			auto screensaver_time = std::make_shared<SliderComponent>(mWindow, 0.f, 30.f, 1.f, "m");
+			auto screensaver_time = std::make_shared<SliderComponent>(mWindow, 0.f, 600.f, 10.f, "s");
 			screensaver_time->setValue((float)(Settings::getInstance()->getInt("ScreenSaverTime") / (1000 * 60)));
 			s->addWithLabel("SCREENSAVER AFTER", screensaver_time);
 			s->addSaveFunc([screensaver_time] { Settings::getInstance()->setInt("ScreenSaverTime", (int)round(screensaver_time->getValue()) * (1000 * 60)); });
-
-			// screensaver behavior
-			auto screensaver_behavior = std::make_shared< OptionListComponent<std::string> >(mWindow, "TRANSITION STYLE", false);
-			std::vector<std::string> screensavers;
-			screensavers.push_back("dim");
-			screensavers.push_back("black");
-			for(auto it = screensavers.begin(); it != screensavers.end(); it++)
-				screensaver_behavior->add(*it, *it, Settings::getInstance()->getString("ScreenSaverBehavior") == *it);
-			s->addWithLabel("SCREENSAVER BEHAVIOR", screensaver_behavior);
-			s->addSaveFunc([screensaver_behavior] { Settings::getInstance()->setString("ScreenSaverBehavior", screensaver_behavior->getSelected()); });
 
 			// framerate
 			auto framerate = std::make_shared<SwitchComponent>(mWindow);
@@ -168,7 +173,7 @@ GuiMenu::GuiMenu(Window* window) : GuiComponent(window), mMenu(window, "MAIN MEN
 				s->addWithLabel("THEME SET", theme_set);
 
 				Window* window = mWindow;
-				s->addSaveFunc([window, theme_set] 
+				s->addSaveFunc([window, theme_set]
 				{
 					bool needReload = false;
 					if(Settings::getInstance()->getString("ThemeSet") != theme_set->getSelected())
@@ -184,21 +189,21 @@ GuiMenu::GuiMenu(Window* window) : GuiComponent(window), mMenu(window, "MAIN MEN
 			mWindow->pushGui(s);
 	});
 
-	addEntry("CONFIGURE INPUT", 0x777777FF, true, 
-		[this] { 
+	addEntry("CONFIGURE INPUT", 0x777777FF, true,
+		[this] {
 			mWindow->pushGui(new GuiDetectDevice(mWindow, false, nullptr));
 	});
 
-	addEntry("QUIT", 0x777777FF, true, 
+	addEntry("QUIT", 0x777777FF, true,
 		[this] {
 			auto s = new GuiSettings(mWindow, "QUIT");
-			
+
 			Window* window = mWindow;
 
 			ComponentListRow row;
 			row.makeAcceptInputHandler([window] {
-				window->pushGui(new GuiMsgBox(window, "REALLY RESTART?", "YES", 
-				[] { 
+				window->pushGui(new GuiMsgBox(window, "REALLY RESTART?", "YES",
+				[] {
 					if(runRestartCommand() != 0)
 						LOG(LogWarning) << "Restart terminated with non-zero result!";
 				}, "NO", nullptr));
@@ -208,8 +213,8 @@ GuiMenu::GuiMenu(Window* window) : GuiComponent(window), mMenu(window, "MAIN MEN
 
 			row.elements.clear();
 			row.makeAcceptInputHandler([window] {
-				window->pushGui(new GuiMsgBox(window, "REALLY SHUTDOWN?", "YES", 
-				[] { 
+				window->pushGui(new GuiMsgBox(window, "REALLY SHUTDOWN?", "YES",
+				[] {
 					if(runShutdownCommand() != 0)
 						LOG(LogWarning) << "Shutdown terminated with non-zero result!";
 				}, "NO", nullptr));
@@ -221,8 +226,8 @@ GuiMenu::GuiMenu(Window* window) : GuiComponent(window), mMenu(window, "MAIN MEN
 			{
 				row.elements.clear();
 				row.makeAcceptInputHandler([window] {
-					window->pushGui(new GuiMsgBox(window, "REALLY QUIT?", "YES", 
-					[] { 
+					window->pushGui(new GuiMsgBox(window, "REALLY QUIT?", "YES",
+					[] {
 						SDL_Event ev;
 						ev.type = SDL_QUIT;
 						SDL_PushEvent(&ev);
@@ -256,7 +261,7 @@ void GuiMenu::onSizeChanged()
 void GuiMenu::addEntry(const char* name, unsigned int color, bool add_arrow, const std::function<void()>& func)
 {
 	std::shared_ptr<Font> font = Font::get(FONT_SIZE_MEDIUM);
-	
+
 	// populate the list
 	ComponentListRow row;
 	row.addElement(std::make_shared<TextComponent>(mWindow, name, font, color), true);
@@ -266,7 +271,7 @@ void GuiMenu::addEntry(const char* name, unsigned int color, bool add_arrow, con
 		std::shared_ptr<ImageComponent> bracket = makeArrow(mWindow);
 		row.addElement(bracket, false);
 	}
-	
+
 	row.makeAcceptInputHandler(func);
 
 	mMenu.addRow(row);

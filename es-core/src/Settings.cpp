@@ -47,13 +47,14 @@ void Settings::setDefaults()
 	mBoolMap["Windowed"] = false;
 
 #ifdef _RPI_
-	// don't enable VSync by default on the Pi, since it already 
+	// don't enable VSync by default on the Pi, since it already
 	// has trouble trying to render things at 60fps in certain menus
 	mBoolMap["VSync"] = false;
 #else
 	mBoolMap["VSync"] = true;
 #endif
 
+	mBoolMap["FreePlay"] = false;
 	mBoolMap["EnableSounds"] = true;
 	mBoolMap["ShowHelpPrompts"] = true;
 	mBoolMap["ScrapeRatings"] = true;
@@ -65,14 +66,13 @@ void Settings::setDefaults()
 	mBoolMap["DebugGrid"] = false;
 	mBoolMap["DebugText"] = false;
 
-	mIntMap["ScreenSaverTime"] = 5*60*1000; // 5 minutes
+	mIntMap["ScreenSaverTime"] = 30*1000; // 30 seconds
 	mIntMap["ScraperResizeWidth"] = 400;
 	mIntMap["ScraperResizeHeight"] = 0;
 	mIntMap["SortTypeIndex"] = 0;
 
 	mStringMap["TransitionStyle"] = "fade";
 	mStringMap["ThemeSet"] = "";
-	mStringMap["ScreenSaverBehavior"] = "dim";
 	mStringMap["Scraper"] = "TheGamesDB";
 
 	mTimeMap["LastXMLImportTime"] = (std::time_t)0;
