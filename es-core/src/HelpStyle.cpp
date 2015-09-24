@@ -5,31 +5,65 @@
 
 HelpStyle::HelpStyle()
 {
-	position = Eigen::Vector2f(Renderer::getScreenWidth() * 0.012f, Renderer::getScreenHeight() * 0.9515f);
-	iconColor = 0x777777FF;
-	textColor = 0x777777FF;
+	promptsPosition = Eigen::Vector2f(Renderer::getScreenWidth() * 0.012f, Renderer::getScreenHeight() * 0.9515f);
+	promptsTextColor = 0x777777FF;
+	promptsIconColor = 0x777777FF;
+
+	timerPosition = Eigen::Vector2f(Renderer::getScreenWidth() * 0.988f, Renderer::getScreenHeight() * 0.9515f);
+	timerTextColor = 0x777777FF;
 
 	if(FONT_SIZE_SMALL != 0)
-		font = Font::get(FONT_SIZE_SMALL);
+	{
+		promptsFont = Font::get(FONT_SIZE_SMALL);
+		timerFont = Font::get(FONT_SIZE_SMALL);
+	}
 	else
-		font = nullptr;
+	{
+		// XXX: this hack allows to initialize HelpStyle when renderer has zero
+		// width and height, thus FONT_SIZE_SMALL == 0 at that time and call to
+		// Font::get(0) fails an assertion of non-zero font size. Assigning nullptr
+		// to fonts works too, but using fallback size value feels safer.
+		promptsFont = Font::get(10);
+		timerFont = Font::get(10);
+	}
 }
 
 void HelpStyle::applyTheme(const std::shared_ptr<ThemeData>& theme, const std::string& view)
 {
-	auto elem = theme->getElement(view, "help", "helpsystem");
-	if(!elem)
-		return;
+	auto elemHelp = theme->getElement(view, "help", "helpsystem");
+	auto elemTimer = theme->getElement(view, "timer", "helpsystem");
 
-	if(elem->has("pos"))
-		position = elem->get<Eigen::Vector2f>("pos").cwiseProduct(Eigen::Vector2f((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight()));
+	if(elemHelp)
+	{
+		if(elemHelp->has("pos"))
+			promptsPosition = elemHelp->get<Eigen::Vector2f>("pos").cwiseProduct(Eigen::Vector2f((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight()));
 
-	if(elem->has("textColor"))
-		textColor = elem->get<unsigned int>("textColor");
+		if(elemHelp->has("iconColor"))
+			promptsIconColor = elemHelp->get<unsigned int>("iconColor");
 
-	if(elem->has("iconColor"))
-		iconColor = elem->get<unsigned int>("iconColor");
+		if(elemHelp->has("textColor"))
+		{
+			promptsTextColor = elemHelp->get<unsigned int>("textColor");
+			timerTextColor = elemHelp->get<unsigned int>("textColor");
+		}
 
-	if(elem->has("fontPath") || elem->has("fontSize"))
-		font = Font::getFromTheme(elem, ThemeFlags::ALL, font);
+		if(elemHelp->has("fontPath") || elemHelp->has("fontSize"))
+		{
+			promptsFont = Font::getFromTheme(elemHelp, ThemeFlags::ALL, promptsFont);
+			timerFont = Font::getFromTheme(elemHelp, ThemeFlags::ALL, promptsFont);
+		}
+	}
+
+	// override fallback values if present
+	if(elemTimer)
+	{
+		if(elemTimer->has("pos"))
+			timerPosition = elemTimer->get<Eigen::Vector2f>("pos").cwiseProduct(Eigen::Vector2f((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight()));
+
+		if(elemTimer->has("textColor"))
+			timerTextColor = elemTimer->get<unsigned int>("textColor");
+
+		if(elemTimer->has("fontPath") || elemTimer->has("fontSize"))
+			timerFont = Font::getFromTheme(elemTimer, ThemeFlags::ALL, timerFont);
+	}
 }

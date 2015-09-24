@@ -4,6 +4,7 @@
 #include "HelpStyle.h"
 
 class ImageComponent;
+class TextComponent;
 class TextureResource;
 class ComponentGrid;
 
@@ -15,6 +16,9 @@ public:
 	void clearPrompts();
 	void setPrompts(const std::vector<HelpPrompt>& prompts);
 
+	void clearTimer();
+	void setTimer(int seconds);
+
 	void render(const Eigen::Affine3f& parent) override;
 	void setOpacity(unsigned char opacity) override;
 
@@ -24,9 +28,12 @@ private:
 	std::shared_ptr<TextureResource> getIconTexture(const char* name);
 	std::map< std::string, std::shared_ptr<TextureResource> > mIconCache;
 
-	std::shared_ptr<ComponentGrid> mGrid;
-	void updateGrid();
+	std::shared_ptr<ComponentGrid> mPromptsGrid;
+	std::shared_ptr<ComponentGrid> mTimerGrid;
+	void updatePrompts();
+	void updateTimer();
 
 	std::vector<HelpPrompt> mPrompts;
+	int mTimer;
 	HelpStyle mStyle;
 };

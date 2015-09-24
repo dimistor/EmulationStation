@@ -9,10 +9,14 @@ class Font;
 
 struct HelpStyle
 {
-	Eigen::Vector2f position;
-	unsigned int iconColor;
-	unsigned int textColor;
-	std::shared_ptr<Font> font;
+	Eigen::Vector2f promptsPosition;
+	unsigned int promptsTextColor;
+	unsigned int promptsIconColor;
+	std::shared_ptr<Font> promptsFont;
+
+	Eigen::Vector2f timerPosition;
+	unsigned int timerTextColor;
+	std::shared_ptr<Font> timerFont;
 
 	HelpStyle(); // default values
 	void applyTheme(const std::shared_ptr<ThemeData>& theme, const std::string& view);
