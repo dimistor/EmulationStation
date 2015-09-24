@@ -19,7 +19,7 @@ public:
 	void setImage(const std::shared_ptr<TextureResource>& texture);
 
 	virtual void onSizeChanged() override;
-	
+
 	virtual void applyTheme(const std::shared_ptr<ThemeData>& theme, const std::string& view, const std::string& element, unsigned int properties) override;
 
 protected:
