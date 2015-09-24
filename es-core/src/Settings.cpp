@@ -19,7 +19,8 @@ std::vector<const char*> settings_dont_save = boost::assign::list_of
 	("Windowed")
 	("VSync")
 	("HideConsole")
-	("IgnoreGamelist");
+	("IgnoreGamelist")
+	("ZmqAddress");
 
 Settings::Settings()
 {
@@ -74,6 +75,8 @@ void Settings::setDefaults()
 	mStringMap["TransitionStyle"] = "fade";
 	mStringMap["ThemeSet"] = "";
 	mStringMap["Scraper"] = "TheGamesDB";
+
+	mStringMap["ZmqAddress"] = "";
 
 	mTimeMap["LastXMLImportTime"] = (std::time_t)0;
 }

@@ -88,7 +88,8 @@ GuiMenu::GuiMenu(Window* window) : GuiComponent(window), mMenu(window, "MAIN MEN
 			mWindow->pushGui(s);
 	});
 
-	addEntry("ARCADE SETTINGS", 0x777777FF, true,
+	bool connected = 0 < Settings::getInstance()->getString("ZmqAddress").length();
+	if(connected) addEntry("ARCADE SETTINGS", 0x777777FF, true,
 		[this] {
 			auto s = new GuiSettings(mWindow, "ARCADE SETTINGS");
 

@@ -2,12 +2,16 @@
 //http://www.aloshi.com
 
 #include <SDL.h>
+#include <string>
 #include <iostream>
 #include <iomanip>
+#include <sstream>
+#include <boost/locale.hpp>
+#include <boost/filesystem.hpp>
+
 #include "Renderer.h"
 #include "views/ViewController.h"
 #include "SystemData.h"
-#include <boost/filesystem.hpp>
 #include "guis/GuiDetectDevice.h"
 #include "guis/GuiMsgBox.h"
 #include "AudioManager.h"
@@ -16,10 +20,9 @@
 #include "Window.h"
 #include "EmulationStation.h"
 #include "Settings.h"
-#include <sstream>
-#include <boost/locale.hpp>
 #include "GamelistDB.h"
 #include "SystemManager.h"
+#include "MessageQueue.h"
 
 #ifdef WIN32
 #include <Windows.h>
@@ -31,11 +34,20 @@ bool parseArgs(int argc, char* argv[], unsigned int* width, unsigned int* height
 {
 	for(int i = 1; i < argc; i++)
 	{
-		if(strcmp(argv[i], "--resolution") == 0)
+		if(strcmp(argv[i], "--zmq-address") == 0)
+		{
+			if(i >= argc - 1)
+			{
+				std::cerr << "Invalid ZMQ address supplied.\n";
+				return false;
+			}
+			Settings::getInstance()->setString("ZmqAddress", std::string(argv[i + 1]));
+			i++; // skip address value
+		}else if(strcmp(argv[i], "--resolution") == 0)
 		{
 			if(i >= argc - 2)
 			{
-				std::cerr << "Invalid resolution supplied.";
+				std::cerr << "Invalid resolution supplied.\n";
 				return false;
 			}
 
@@ -82,6 +94,7 @@ bool parseArgs(int argc, char* argv[], unsigned int* width, unsigned int* height
 				"Written by Alec \"Aloshi\" Lofquist.\n"
 				"Version " << PROGRAM_VERSION_STRING << ", built " << PROGRAM_BUILT_STRING << "\n\n"
 				"Command line arguments:\n"
+				"--zmq-address [address]		connect to a message queue\n"
 				"--resolution [width] [height]	try and force a particular resolution\n"
 				"--gamelist-only			skip automatic game search, only read from gamelist.xml\n"
 				"--ignore-gamelist		ignore the gamelist (useful for troubleshooting)\n"
