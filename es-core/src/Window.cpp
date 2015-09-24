@@ -315,6 +315,22 @@ void Window::setHelpPrompts(const std::vector<HelpPrompt>& prompts, const HelpSt
 		}
 	}
 
+	// hide [start/select] prompts
+	auto last = std::remove_if(addPrompts.begin(), addPrompts.end(), [](const HelpPrompt& p) -> bool {
+		static const char* map[] = {"start", "select", NULL};
+
+		int i = 0;
+		while(map[i] != NULL)
+		{
+			if(p.first == map[i])
+				return true;
+			i++;
+		}
+
+		return false;
+	});
+	addPrompts.erase(last, addPrompts.end());
+
 	// sort prompts so it goes [dpad_all] [dpad_u/d] [dpad_l/r] [a/b/x/y/l/r] [start/select]
 	std::sort(addPrompts.begin(), addPrompts.end(), [](const HelpPrompt& a, const HelpPrompt& b) -> bool {
 
