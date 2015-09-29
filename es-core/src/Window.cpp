@@ -9,6 +9,7 @@
 #include "components/HelpComponent.h"
 #include "components/ImageComponent.h"
 #include "components/VideoComponent.h"
+#include "MessageQueue.h"
 
 Window::Window() : mNormalizeNextUpdate(false), mFrameTimeElapsed(0), mFrameCountElapsed(0), mAverageDeltaTime(10),
 	mAllowSleep(true), mSleeping(false), mTimeSinceLastInput(0)
@@ -182,6 +183,10 @@ void Window::update(int deltaTime)
 		mDemoVideo->update(deltaTime);
 		return;
 	}
+
+	auto mq = MessageQueue::getInstance();
+	if(mq->isTimeChanged())
+		mHelp->setTimer(mq->getTime());
 
 	if(peekGui())
 		peekGui()->update(deltaTime);

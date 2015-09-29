@@ -170,6 +170,7 @@ void close_log_on_exit()
 void delete_singletons_on_exit()
 {
 	delete SystemManager::getInstance();
+	delete MessageQueue::getInstance();
 }
 
 int main(int argc, char* argv[])
@@ -302,6 +303,8 @@ int main(int argc, char* argv[])
 
 	int lastTime = SDL_GetTicks();
 	bool running = true;
+
+	auto mq = MessageQueue::getInstance();
 
 	while(running)
 	{

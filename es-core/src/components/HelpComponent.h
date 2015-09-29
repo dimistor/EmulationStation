@@ -34,6 +34,6 @@ private:
 	void updateTimer();
 
 	std::vector<HelpPrompt> mPrompts;
-	int mTimer;
+	std::vector<int> mTimer;
 	HelpStyle mStyle;
 };

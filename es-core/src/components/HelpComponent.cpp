@@ -29,7 +29,7 @@ static const std::map<std::string, const char*> ICON_PATH_MAP = boost::assign::m
 	("start", ":/help/button_start.svg")
 	("select", ":/help/button_select.svg");
 
-HelpComponent::HelpComponent(Window* window) : GuiComponent(window), mTimer(-1)
+HelpComponent::HelpComponent(Window* window) : GuiComponent(window)
 {
 }
 
@@ -47,13 +47,21 @@ void HelpComponent::setPrompts(const std::vector<HelpPrompt>& prompts)
 
 void HelpComponent::clearTimer()
 {
-	mTimer = -1;
+	mTimer.clear();
 	updateTimer();
 }
 
 void HelpComponent::setTimer(int seconds)
 {
-	mTimer = seconds;
+	int s = seconds % 60;
+	int m = (int)(seconds / 60) % 60;
+	int h = (int)(seconds / (60 * 60));
+
+	mTimer.clear();
+	mTimer.push_back(s);
+	mTimer.push_back(m);
+	if(h > 0) mTimer.push_back(h);
+
 	updateTimer();
 }
 
@@ -114,7 +122,7 @@ void HelpComponent::updatePrompts()
 
 void HelpComponent::updateTimer()
 {
-	if(!Settings::getInstance()->getBool("ShowHelpPrompts") /*|| mTimer < 0*/)
+	if(Settings::getInstance()->getBool("FreePlay") || mTimer.empty())
 	{
 		mTimerGrid.reset();
 		return;
@@ -122,17 +130,43 @@ void HelpComponent::updateTimer()
 
 	std::shared_ptr<Font>& font = mStyle.timerFont;
 
+	mTimerGrid = std::make_shared<ComponentGrid>(mWindow, Vector2i(mTimer.size() * 2, 1));
+	// [] [h] | [colon] [m] | [colon] [s]
+
+	std::vector< std::shared_ptr<TextComponent> > labels;
+
 	float width = 0;
 	const float height = round(font->getLetterHeight() * 1.25f);
+	for(auto it = mTimer.begin(); it != mTimer.end(); it++)
+	{
+		std::stringstream ss;
+		ss << std::setw(2) << std::setfill('0') << *it;
+		auto lbl = std::make_shared<TextComponent>(mWindow, ss.str(), font, mStyle.promptsTextColor);
+		auto cln = std::make_shared<TextComponent>(mWindow, ":", font, mStyle.promptsTextColor);
+		labels.push_back(lbl);
+		labels.push_back(cln);
 
-	mTimerGrid = std::make_shared<ComponentGrid>(mWindow, Vector2i(1, 1));
-	auto timer = std::make_shared<TextComponent>(mWindow, "04:32", font, mStyle.timerTextColor);
-	width += timer->getSize().x();
+		width += lbl->getSize().x() + cln->getSize().x();
+	}
+
 	mTimerGrid->setSize(width, height);
-	mTimerGrid->setColWidthPerc(0, 1.0f);
-	mTimerGrid->setEntry(timer, Vector2i(0, 0), false, false);
+
+	std::reverse(labels.begin(), labels.end());
+	for(unsigned int i = 1; i < labels.size(); i++)
+	{
+		mTimerGrid->setColWidthPerc(i, labels.at(i)->getSize().x() / width);
+		mTimerGrid->setEntry(labels.at(i), Vector2i(i, 0), false, false);
+	}
 
 	mTimerGrid->setPosition(Eigen::Vector3f(mStyle.timerPosition.x() - width, mStyle.timerPosition.y(), 0.0f));
+
+	// auto timer = std::make_shared<TextComponent>(mWindow, std::to_string(mTimer), font, mStyle.timerTextColor);
+	// width += timer->getSize().x();
+	// mTimerGrid->setSize(width, height);
+	// mTimerGrid->setColWidthPerc(0, 1.0f);
+	// mTimerGrid->setEntry(timer, Vector2i(0, 0), false, false);
+	//
+	// mTimerGrid->setPosition(Eigen::Vector3f(mStyle.timerPosition.x() - width, mStyle.timerPosition.y(), 0.0f));
 }
 
 std::shared_ptr<TextureResource> HelpComponent::getIconTexture(const char* name)
