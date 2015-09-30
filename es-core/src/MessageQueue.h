@@ -9,9 +9,8 @@ class MessageQueue
 public:
 	static MessageQueue* getInstance();
 
-	int getTime(bool makeRequest = false);
-	bool isTimeChanged();
-	int run(std::string command);
+	unsigned int getTimer(bool makeRequest = false);
+	int runSystemCommand(const std::string& cmd_utf8);
 
 private:
 	static MessageQueue* sInstance;
@@ -22,8 +21,7 @@ private:
 	zmq::socket_t mSubscriber;
 
 	std::thread mSubscriberThread;
-	void updateRunner();
+	void mSubscriberUpdater();
 
-	std::atomic<bool> mIsTimeChanged;
-	std::atomic<int> mTime;
+	std::atomic<unsigned int> mTimer;
 };

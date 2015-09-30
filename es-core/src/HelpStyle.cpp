@@ -11,6 +11,8 @@ HelpStyle::HelpStyle()
 
 	timerPosition = Eigen::Vector2f(Renderer::getScreenWidth() * 0.988f, Renderer::getScreenHeight() * 0.9515f);
 	timerTextColor = 0x777777FF;
+	timerTextSuccessColor = 0x20CF20FF;
+	timerTextErrorColor = 0xCF2020FF;
 
 	if(FONT_SIZE_SMALL != 0)
 	{
@@ -62,6 +64,12 @@ void HelpStyle::applyTheme(const std::shared_ptr<ThemeData>& theme, const std::s
 
 		if(elemTimer->has("textColor"))
 			timerTextColor = elemTimer->get<unsigned int>("textColor");
+
+		if(elemTimer->has("textSuccessColor"))
+			timerTextSuccessColor = elemTimer->get<unsigned int>("textSuccessColor");
+
+		if(elemTimer->has("textErrorColor"))
+			timerTextErrorColor = elemTimer->get<unsigned int>("textErrorColor");
 
 		if(elemTimer->has("fontPath") || elemTimer->has("fontSize"))
 			timerFont = Font::getFromTheme(elemTimer, ThemeFlags::ALL, timerFont);

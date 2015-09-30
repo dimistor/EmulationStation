@@ -9,6 +9,8 @@ class HelpComponent;
 class ImageComponent;
 class VideoComponent;
 
+enum WindowStatus { WINDOW_STATUS_NO_TIME_LEFT };
+
 class Window
 {
 public:
@@ -32,6 +34,8 @@ public:
 	inline bool isSleeping() const { return mSleeping; }
 	bool getAllowSleep();
 	void setAllowSleep(bool sleep);
+
+	void setStatus(WindowStatus status);
 
 	void renderLoadingScreen();
 

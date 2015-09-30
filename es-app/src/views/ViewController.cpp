@@ -2,6 +2,7 @@
 #include "Log.h"
 #include "SystemData.h"
 #include "Settings.h"
+#include "MessageQueue.h"
 
 #include "views/gamelist/BasicGameListView.h"
 #include "views/gamelist/DetailedGameListView.h"
@@ -184,6 +185,11 @@ void ViewController::launch(FileData& game, Eigen::Vector3f center)
 		return;
 	}
 
+	if(!Settings::getInstance()->isFreePlay() && MessageQueue::getInstance()->getTimer() == 0)
+	{
+		mWindow->setStatus(WINDOW_STATUS_NO_TIME_LEFT);
+		return;
+	}
 	Eigen::Affine3f origCamera = mCamera;
 	origCamera.translation() = -mCurrentView->getPosition();
 

@@ -16,6 +16,8 @@ struct HelpStyle
 
 	Eigen::Vector2f timerPosition;
 	unsigned int timerTextColor;
+	unsigned int timerTextSuccessColor;
+	unsigned int timerTextErrorColor;
 	std::shared_ptr<Font> timerFont;
 
 	HelpStyle(); // default values

@@ -71,9 +71,14 @@ bool Window::init(unsigned int width, unsigned int height)
 	}
 
 	InputManager::getInstance()->init();
-
 	ResourceManager::getInstance()->reloadAll();
 
+	auto settings = Settings::getInstance();
+	if(!Settings::getInstance()->isFreePlay())
+	{
+		unsigned int timer = MessageQueue::getInstance()->getTimer(true);
+		mHelp->setTimer(timer);
+	}
 	//keep a reference to the default fonts, so they don't keep getting destroyed/recreated
 	if(mDefaultFonts.empty())
 	{
@@ -184,9 +189,8 @@ void Window::update(int deltaTime)
 		return;
 	}
 
-	auto mq = MessageQueue::getInstance();
-	if(mq->isTimeChanged())
-		mHelp->setTimer(mq->getTime());
+	mHelp->setTimer(MessageQueue::getInstance()->getTimer());
+	mHelp->update(deltaTime);
 
 	if(peekGui())
 		peekGui()->update(deltaTime);
@@ -250,6 +254,14 @@ bool Window::getAllowSleep()
 void Window::setAllowSleep(bool sleep)
 {
 	mAllowSleep = sleep;
+}
+
+void Window::setStatus(WindowStatus status) {
+	switch (status) {
+		case WINDOW_STATUS_NO_TIME_LEFT:
+			mHelp->setTimerStatus(TIMER_STATUS_ERROR);
+			break;
+	}
 }
 
 void Window::renderLoadingScreen()

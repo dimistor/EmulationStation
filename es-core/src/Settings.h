@@ -25,6 +25,8 @@ public:
 	void setString(const std::string& name, const std::string& value);
 	void setTime(const std::string& name, const std::time_t value);
 
+	bool isFreePlay();
+
 private:
 	static Settings* sInstance;
 

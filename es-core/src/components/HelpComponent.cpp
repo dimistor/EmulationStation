@@ -7,6 +7,7 @@
 #include "components/TextComponent.h"
 #include "components/ComponentGrid.h"
 #include <boost/assign.hpp>
+#include "animations/LambdaAnimation.h"
 
 #define OFFSET_X 12 // move the entire thing right by this amount (px)
 #define OFFSET_Y 12 // move the entire thing up by this amount (px)
@@ -29,7 +30,7 @@ static const std::map<std::string, const char*> ICON_PATH_MAP = boost::assign::m
 	("start", ":/help/button_start.svg")
 	("select", ":/help/button_select.svg");
 
-HelpComponent::HelpComponent(Window* window) : GuiComponent(window)
+HelpComponent::HelpComponent(Window* window) : GuiComponent(window), mTimerSeconds(0)
 {
 }
 
@@ -51,8 +52,11 @@ void HelpComponent::clearTimer()
 	updateTimer();
 }
 
-void HelpComponent::setTimer(int seconds)
+void HelpComponent::setTimer(unsigned int seconds)
 {
+	if(!mTimer.empty() && mTimerSeconds == seconds)
+		return;
+
 	int s = seconds % 60;
 	int m = (int)(seconds / 60) % 60;
 	int h = (int)(seconds / (60 * 60));
@@ -61,8 +65,18 @@ void HelpComponent::setTimer(int seconds)
 	mTimer.push_back(s);
 	mTimer.push_back(m);
 	if(h > 0) mTimer.push_back(h);
+	bool increased = seconds > mTimerSeconds;
+	mTimerSeconds = seconds;
 
-	updateTimer();
+	if(increased)
+		updateTimer(TIMER_STATUS_SUCCESS);
+	else
+		updateTimer();
+}
+
+void HelpComponent::setTimerStatus(TimerStatus status)
+{
+	updateTimer(status);
 }
 
 void HelpComponent::setStyle(const HelpStyle& style)
@@ -120,7 +134,7 @@ void HelpComponent::updatePrompts()
 	//mPromptsGrid->setPosition(OFFSET_X, Renderer::getScreenHeight() - mPromptsGrid->getSize().y() - OFFSET_Y);
 }
 
-void HelpComponent::updateTimer()
+void HelpComponent::updateTimer(TimerStatus status)
 {
 	if(Settings::getInstance()->getBool("FreePlay") || mTimer.empty())
 	{
@@ -141,8 +155,8 @@ void HelpComponent::updateTimer()
 	{
 		std::stringstream ss;
 		ss << std::setw(2) << std::setfill('0') << *it;
-		auto lbl = std::make_shared<TextComponent>(mWindow, ss.str(), font, mStyle.promptsTextColor);
-		auto cln = std::make_shared<TextComponent>(mWindow, ":", font, mStyle.promptsTextColor);
+		auto lbl = std::make_shared<TextComponent>(mWindow, ss.str(), font, mStyle.timerTextColor);
+		auto cln = std::make_shared<TextComponent>(mWindow, ":", font, mStyle.timerTextColor);
 		labels.push_back(lbl);
 		labels.push_back(cln);
 
@@ -160,13 +174,33 @@ void HelpComponent::updateTimer()
 
 	mTimerGrid->setPosition(Eigen::Vector3f(mStyle.timerPosition.x() - width, mStyle.timerPosition.y(), 0.0f));
 
-	// auto timer = std::make_shared<TextComponent>(mWindow, std::to_string(mTimer), font, mStyle.timerTextColor);
-	// width += timer->getSize().x();
-	// mTimerGrid->setSize(width, height);
-	// mTimerGrid->setColWidthPerc(0, 1.0f);
-	// mTimerGrid->setEntry(timer, Vector2i(0, 0), false, false);
-	//
-	// mTimerGrid->setPosition(Eigen::Vector3f(mStyle.timerPosition.x() - width, mStyle.timerPosition.y(), 0.0f));
+	if(status != TIMER_STATUS_NONE)
+	{
+		cancelAnimation(0);
+
+		unsigned int defaultColor = mStyle.timerTextColor;
+		unsigned int statusColor;
+		switch (status) {
+			case TIMER_STATUS_SUCCESS:
+				statusColor = mStyle.timerTextSuccessColor;
+				break;
+			case TIMER_STATUS_ERROR:
+				statusColor = mStyle.timerTextErrorColor;
+				break;
+		}
+
+		auto colorFunc = [labels, defaultColor, statusColor](float t) {
+			float step = smoothStep(0, 1, t);
+			unsigned int color = lerpColor(defaultColor, statusColor, step);
+			for(auto it = labels.begin(); it != labels.end(); it++)
+				(*it)->setColor(color);
+		};
+
+		int ANIM_DURATION = 500;
+		setAnimation(new LambdaAnimation(colorFunc, ANIM_DURATION), 0, [this, ANIM_DURATION, colorFunc] {
+			setAnimation(new LambdaAnimation(colorFunc, ANIM_DURATION), 0, nullptr, true);
+		});
+	}
 }
 
 std::shared_ptr<TextureResource> HelpComponent::getIconTexture(const char* name)

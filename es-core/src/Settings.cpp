@@ -20,7 +20,8 @@ std::vector<const char*> settings_dont_save = boost::assign::list_of
 	("VSync")
 	("HideConsole")
 	("IgnoreGamelist")
-	("ZmqAddress");
+	("ZmqServer")
+	("ZmqPublisher");
 
 Settings::Settings()
 {
@@ -76,7 +77,8 @@ void Settings::setDefaults()
 	mStringMap["ThemeSet"] = "";
 	mStringMap["Scraper"] = "TheGamesDB";
 
-	mStringMap["ZmqAddress"] = "";
+	mStringMap["ZmqServer"] = "";
+	mStringMap["ZmqPublisher"] = "";
 
 	mTimeMap["LastXMLImportTime"] = (std::time_t)0;
 }
@@ -158,6 +160,11 @@ void Settings::loadFile()
 		setTime(node.attribute("name").as_string(), boost::lexical_cast<std::time_t>(node.attribute("value").as_string()));
 	for(pugi::xml_node node = doc.child("string"); node; node = node.next_sibling("string"))
 		setString(node.attribute("name").as_string(), node.attribute("value").as_string());
+}
+
+bool Settings::isFreePlay()
+{
+	return getBool("FreePlay") || getString("ZmqServer").length() == 0;	
 }
 
 //Print a warning message if the setting we're trying to get doesn't already exist in the map, then return the value in the map.

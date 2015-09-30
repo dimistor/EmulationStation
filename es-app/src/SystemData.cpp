@@ -10,6 +10,7 @@
 #include "InputManager.h"
 #include <iostream>
 #include "Settings.h"
+#include "MessageQueue.h"
 
 namespace fs = boost::filesystem;
 
@@ -85,6 +86,13 @@ std::string escapePath(const boost::filesystem::path& path)
 
 void SystemData::launchGame(Window* window, FileData game) const
 {
+	auto runner = [](const std::string& command) -> int {
+		if(Settings::getInstance()->isFreePlay())
+			return runSystemCommand(command);
+		else
+			return MessageQueue::getInstance()->runSystemCommand(command);
+	};
+
 	LOG(LogInfo) << "Attempting to launch game...";
 
 	AudioManager::getInstance()->deinit();
@@ -102,7 +110,7 @@ void SystemData::launchGame(Window* window, FileData game) const
 	command = strreplace(command, "%ROM_RAW%", rom_raw);
 
 	LOG(LogInfo) << "	" << command;
-	int exitCode = runSystemCommand(command);
+	int exitCode = runner(command);
 
 	if(exitCode != 0)
 	{

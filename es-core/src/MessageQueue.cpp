@@ -2,24 +2,26 @@
 
 #include "MessageQueue.h"
 #include "Settings.h"
+#include "Log.h"
 
 MessageQueue* MessageQueue::sInstance = nullptr;
 
-MessageQueue::MessageQueue() : mContext(1), mTime(-1), mIsTimeChanged(false),
-mClient(mContext, ZMQ_REQ), mSubscriber(mContext, ZMQ_SUB)
+MessageQueue::MessageQueue() : mContext(1), mTimer(0), mClient(mContext, ZMQ_REQ), mSubscriber(mContext, ZMQ_SUB)
 {
-	// std::string server = Settings::getInstance()->getString("ZmqAddress");
-	// std::string publisher = Settings::getInstance()->getString("ZmqAddress");
-	std::string server = "tcp://127.0.0.1:3001";
-	std::string publisher = "tcp://127.0.0.1:3002";
+	std::string server = Settings::getInstance()->getString("ZmqServer");
+	std::string publisher = Settings::getInstance()->getString("ZmqPublisher");
 
-	mClient.connect(server.c_str());
+	if(server.length() > 0)
+		mClient.connect(server.c_str());
 
-	mSubscriber.connect(publisher.c_str());
-	mSubscriber.setsockopt(ZMQ_SUBSCRIBE, "timer", 5);
+	if(publisher.length() > 0)
+	{
+		mSubscriber.connect(publisher.c_str());
+		mSubscriber.setsockopt(ZMQ_SUBSCRIBE, "timer", 5);
 
-	mSubscriberThread = std::thread(&MessageQueue::updateRunner, this);
-	mSubscriberThread.detach();
+		mSubscriberThread = std::thread(&MessageQueue::mSubscriberUpdater, this);
+		mSubscriberThread.detach();
+	}
 }
 
 MessageQueue* MessageQueue::getInstance()
@@ -30,35 +32,63 @@ MessageQueue* MessageQueue::getInstance()
 	return sInstance;
 }
 
-int MessageQueue::getTime(bool makeRequest)
+unsigned int MessageQueue::getTimer(bool makeRequest)
 {
 	if(!makeRequest)
-		return mTime.load();
+		return mTimer.load();
 
-	zmq::message_t req, rep;
+	if(!mClient.connected())
+		return 0;
+
+	std::string reqCmd = "get_time";
+	zmq::message_t req(reqCmd.size());
+	memcpy(req.data(), reqCmd.data(), reqCmd.size());
 	mClient.send(req);
+
+	zmq::message_t rep;
 	mClient.recv(&rep);
-	return 0;
+	std::string reply = std::string(static_cast<char*>(rep.data()), rep.size());
+	unsigned int seconds = 0;
+	try
+	{
+		seconds = std::stoi(reply);
+		mTimer.store(seconds);
+	}
+	catch(const std::invalid_argument &ex)
+	{
+		LOG(LogError) << "Error converting timer value '" << reply << "' to integer";
+	}
+
+	return seconds;
 }
 
-bool MessageQueue::isTimeChanged()
-{
-	return mIsTimeChanged.load();
-}
-
-int MessageQueue::run(std::string command)
+int MessageQueue::runSystemCommand(const std::string& cmd_utf8)
 {
 	if(!mClient.connected())
 		return -1;
 
-	zmq::message_t req, rep;
-	mClient.send(req);
-	mClient.recv(&rep);
+		std::string reqCmd = "run_cmd";
+		zmq::message_t req(reqCmd.size());
+		memcpy(req.data(), reqCmd.data(), reqCmd.size());
+		mClient.send(req);
 
-	return 0;
+		zmq::message_t rep;
+		mClient.recv(&rep);
+		std::string reply = std::string(static_cast<char*>(rep.data()), rep.size());
+		int exitcode = -1;
+		try
+		{
+			exitcode = std::stoi(reply);
+		}
+		catch(const std::invalid_argument &ex)
+		{
+			LOG(LogError) << "Error converting exit code value '" << reply << "' to integer";
+		}
+
+	return exitcode;
 }
 
-void MessageQueue::updateRunner()
+void MessageQueue::mSubscriberUpdater()
 {
 	while(true)
 	{
@@ -70,12 +100,7 @@ void MessageQueue::updateRunner()
 			{
 				auto data_s = std::string(static_cast<char*>(data.data()), data.size());
 				int seconds = std::stoi(data_s);
-				int last = mTime.load();
-				if(last != seconds)
-				{
-					mTime.store(seconds);
-					mIsTimeChanged.store(true);
-				}
+				mTimer.store(seconds);
 			}
 		}
 	}
