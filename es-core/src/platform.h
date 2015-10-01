@@ -1,3 +1,5 @@
+#pragma once
+
 //the Makefile defines one of these:
 //#define USE_OPENGL_ES
 //#define USE_OPENGL_DESKTOP

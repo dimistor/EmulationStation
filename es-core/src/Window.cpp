@@ -10,6 +10,7 @@
 #include "components/ImageComponent.h"
 #include "components/VideoComponent.h"
 #include "MessageQueue.h"
+#include "VideoData.h"
 
 Window::Window() : mNormalizeNextUpdate(false), mFrameTimeElapsed(0), mFrameCountElapsed(0), mAverageDeltaTime(10),
 	mAllowSleep(true), mSleeping(false), mTimeSinceLastInput(0)
@@ -381,10 +382,7 @@ void Window::setHelpPrompts(const std::vector<HelpPrompt>& prompts, const HelpSt
 
 void Window::onSleep()
 {
-	// Renderer::setMatrix(Eigen::Affine3f::Identity());
-	// unsigned char opacity = Settings::getInstance()->getString("ScreenSaverBehavior") == "dim" ? 0xA0 : 0xFF;
-	// Renderer::drawRect(0, 0, Renderer::getScreenWidth(), Renderer::getScreenHeight(), 0x00000000 | opacity);
-	mDemoVideo->setVideo(getHomePath() + "/.emulationstation/video/sample.mp4");
+	mDemoVideo->setVideo(VideoData::getInstance()->getRandomVideo());
 }
 
 void Window::onWake()

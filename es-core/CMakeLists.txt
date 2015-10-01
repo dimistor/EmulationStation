@@ -17,6 +17,7 @@ set(CORE_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Sound.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ThemeData.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Util.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/VideoData.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Window.h
 
 	# Animations
@@ -80,6 +81,7 @@ set(CORE_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Sound.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ThemeData.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Util.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/VideoData.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Window.cpp
 
 	# Animations

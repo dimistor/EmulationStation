@@ -127,9 +127,9 @@ GuiMenu::GuiMenu(Window* window) : GuiComponent(window), mMenu(window, "MAIN MEN
 
 			// screensaver time
 			auto screensaver_time = std::make_shared<SliderComponent>(mWindow, 0.f, 600.f, 10.f, "s");
-			screensaver_time->setValue((float)(Settings::getInstance()->getInt("ScreenSaverTime") / (1000 * 60)));
+			screensaver_time->setValue((float)(Settings::getInstance()->getInt("ScreenSaverTime") / 1000));
 			s->addWithLabel("SCREENSAVER AFTER", screensaver_time);
-			s->addSaveFunc([screensaver_time] { Settings::getInstance()->setInt("ScreenSaverTime", (int)round(screensaver_time->getValue()) * (1000 * 60)); });
+			s->addSaveFunc([screensaver_time] { Settings::getInstance()->setInt("ScreenSaverTime", (int)round(screensaver_time->getValue()) * 1000); });
 
 			// framerate
 			auto framerate = std::make_shared<SwitchComponent>(mWindow);
