@@ -332,12 +332,12 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		// if(window.isSleeping())
-		// {
-		// 	lastTime = SDL_GetTicks();
-		// 	SDL_Delay(1); // this doesn't need to be accurate, we're just giving up our CPU time until something wakes us up
-		// 	continue;
-		// }
+		if(window.isSleeping())
+		{
+			lastTime = SDL_GetTicks();
+			SDL_Delay(1); // this doesn't need to be accurate, we're just giving up our CPU time until something wakes us up
+			continue;
+		}
 
 		int curTime = SDL_GetTicks();
 		int deltaTime = curTime - lastTime;

@@ -64,6 +64,7 @@ private:
 
 	bool mAllowSleep;
 	bool mSleeping;
+	bool mPlayingVideo;
 	unsigned int mTimeSinceLastInput;
 
 	bool mRenderedHelpPrompts;

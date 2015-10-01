@@ -13,7 +13,7 @@
 #include "VideoData.h"
 
 Window::Window() : mNormalizeNextUpdate(false), mFrameTimeElapsed(0), mFrameCountElapsed(0), mAverageDeltaTime(10),
-	mAllowSleep(true), mSleeping(false), mTimeSinceLastInput(0)
+	mAllowSleep(true), mSleeping(false), mPlayingVideo(false), mTimeSinceLastInput(0)
 {
 	mHelp = new HelpComponent(this);
 	mDemoVideo = new VideoComponent(this);
@@ -112,16 +112,14 @@ void Window::textInput(const char* text)
 
 void Window::input(InputConfig* config, Input input)
 {
-	if(mSleeping)
+	mTimeSinceLastInput = 0;
+
+	if(mSleeping || mPlayingVideo)
 	{
 		// wake up
-		mTimeSinceLastInput = 0;
-		mSleeping = false;
 		onWake();
 		return;
 	}
-
-	mTimeSinceLastInput = 0;
 
 	if(config->getDeviceId() == DEVICE_KEYBOARD && input.value && input.id == SDLK_g && SDL_GetModState() & KMOD_LCTRL && Settings::getInstance()->getBool("Debug"))
 	{
@@ -178,10 +176,11 @@ void Window::update(int deltaTime)
 
 	mTimeSinceLastInput += deltaTime;
 
-	if(isSleeping())
+	if(mPlayingVideo)
 	{
 		if(!mDemoVideo->isPlaying())
 		{
+			// restart on stop/end
 			onWake();
 			onSleep();
 			return;
@@ -203,7 +202,7 @@ void Window::render()
 
 	mRenderedHelpPrompts = false;
 
-	if(isSleeping())
+	if(mPlayingVideo)
 	{
 		mDemoVideo->setResize((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight());
 		mDemoVideo->render(transform);
@@ -237,7 +236,6 @@ void Window::render()
 	if(mTimeSinceLastInput >= screensaverTime && screensaverTime != 0 && mAllowSleep)
 	{
 		// go to sleep
-		mSleeping = true;
 		onSleep();
 	}
 }
@@ -382,10 +380,24 @@ void Window::setHelpPrompts(const std::vector<HelpPrompt>& prompts, const HelpSt
 
 void Window::onSleep()
 {
-	mDemoVideo->setVideo(VideoData::getInstance()->getRandomVideo());
+	std::string video = VideoData::getInstance()->getRandomVideo();
+	if(!video.empty())
+	{
+		mPlayingVideo = true;
+		mDemoVideo->setVideo(video);
+	}
+	else
+	{
+		mSleeping = true;
+		Renderer::setMatrix(Eigen::Affine3f::Identity());
+		unsigned char opacity = 0xA0;
+		Renderer::drawRect(0, 0, Renderer::getScreenWidth(), Renderer::getScreenHeight(), 0x00000000 | opacity);
+	}
 }
 
 void Window::onWake()
 {
 	mDemoVideo->closeVideo();
+	mSleeping = false;
+	mPlayingVideo = false;
 }

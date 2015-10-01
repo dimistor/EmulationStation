@@ -11,10 +11,10 @@ MessageQueue::MessageQueue() : mContext(1), mTimer(0), mIsRunning(true), mClient
 	std::string server = Settings::getInstance()->getString("ZmqServer");
 	std::string publisher = Settings::getInstance()->getString("ZmqPublisher");
 
-	if(server.length() > 0)
+	if(!server.empty())
 		mClient.connect(server.c_str());
 
-	if(publisher.length() > 0)
+	if(!publisher.empty())
 	{
 		mSubscriber.connect(publisher.c_str());
 		mSubscriber.setsockopt(ZMQ_SUBSCRIBE, "timer", 5);
