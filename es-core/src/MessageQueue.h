@@ -8,6 +8,7 @@ class MessageQueue
 {
 public:
 	static MessageQueue* getInstance();
+	~MessageQueue();
 
 	unsigned int getTimer(bool makeRequest = false);
 	int runSystemCommand(const std::string& cmd_utf8);
@@ -20,6 +21,7 @@ private:
 	zmq::socket_t mClient;
 	zmq::socket_t mSubscriber;
 
+	std::atomic<bool> mIsRunning;
 	std::thread mSubscriberThread;
 	void mSubscriberUpdater();
 

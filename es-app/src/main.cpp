@@ -34,24 +34,16 @@ bool parseArgs(int argc, char* argv[], unsigned int* width, unsigned int* height
 {
 	for(int i = 1; i < argc; i++)
 	{
-		if(strcmp(argv[i], "--zmq-server") == 0)
+		if(strcmp(argv[i], "--zmq-addresses") == 0)
 		{
-			if(i >= argc - 1)
+			if(i >= argc - 2)
 			{
-				std::cerr << "Invalid ZMQ address supplied.\n";
+				std::cerr << "Invalid ZMQ addresses supplied.\n";
 				return false;
 			}
 			Settings::getInstance()->setString("ZmqServer", std::string(argv[i + 1]));
-			i++; // skip address value
-		}else if(strcmp(argv[i], "--zmq-publisher") == 0)
-		{
-			if(i >= argc - 1)
-			{
-				std::cerr << "Invalid ZMQ address supplied.\n";
-				return false;
-			}
-			Settings::getInstance()->setString("ZmqPublisher", std::string(argv[i + 1]));
-			i++; // skip address value
+			Settings::getInstance()->setString("ZmqPublisher", std::string(argv[i + 2]));
+			i += 2; // skip addresses values
 		}else if(strcmp(argv[i], "--resolution") == 0)
 		{
 			if(i >= argc - 2)
@@ -103,8 +95,7 @@ bool parseArgs(int argc, char* argv[], unsigned int* width, unsigned int* height
 				"Written by Alec \"Aloshi\" Lofquist.\n"
 				"Version " << PROGRAM_VERSION_STRING << ", built " << PROGRAM_BUILT_STRING << "\n\n"
 				"Command line arguments:\n"
-				"--zmq-server [address]		connect to a message queue (runner)\n"
-				"--zmq-publisher [address]		connect to a message queue (timer)\n"
+				"--zmq-addresses [server] [publisher]	connect to a message queue\n"
 				"--resolution [width] [height]	try and force a particular resolution\n"
 				"--gamelist-only			skip automatic game search, only read from gamelist.xml\n"
 				"--ignore-gamelist		ignore the gamelist (useful for troubleshooting)\n"

@@ -6,7 +6,7 @@
 
 MessageQueue* MessageQueue::sInstance = nullptr;
 
-MessageQueue::MessageQueue() : mContext(1), mTimer(0), mClient(mContext, ZMQ_REQ), mSubscriber(mContext, ZMQ_SUB)
+MessageQueue::MessageQueue() : mContext(1), mTimer(0), mIsRunning(true), mClient(mContext, ZMQ_REQ), mSubscriber(mContext, ZMQ_SUB)
 {
 	std::string server = Settings::getInstance()->getString("ZmqServer");
 	std::string publisher = Settings::getInstance()->getString("ZmqPublisher");
@@ -22,6 +22,11 @@ MessageQueue::MessageQueue() : mContext(1), mTimer(0), mClient(mContext, ZMQ_REQ
 		mSubscriberThread = std::thread(&MessageQueue::mSubscriberUpdater, this);
 		mSubscriberThread.detach();
 	}
+}
+
+MessageQueue::~MessageQueue()
+{
+	mIsRunning.store(false);
 }
 
 MessageQueue* MessageQueue::getInstance()
@@ -90,18 +95,26 @@ int MessageQueue::runSystemCommand(const std::string& cmd_utf8)
 
 void MessageQueue::mSubscriberUpdater()
 {
-	while(true)
+	while(mIsRunning.load())
 	{
-		zmq::message_t event, data;
-		if(mSubscriber.recv(&event) && mSubscriber.recv(&data))
+		try
 		{
-			auto event_s = std::string(static_cast<char*>(event.data()), event.size());
-			if(event_s == "timer")
+			zmq::message_t event, data;
+			if(mSubscriber.recv(&event) && mSubscriber.recv(&data))
 			{
-				auto data_s = std::string(static_cast<char*>(data.data()), data.size());
-				int seconds = std::stoi(data_s);
-				mTimer.store(seconds);
+				auto event_s = std::string(static_cast<char*>(event.data()), event.size());
+				if(event_s == "timer")
+				{
+					auto data_s = std::string(static_cast<char*>(data.data()), data.size());
+					int seconds = std::stoi(data_s);
+					mTimer.store(seconds);
+				}
 			}
+		}
+		catch(const zmq::error_t &ex)
+		{
+			if(ex.num() != ETERM)
+				LOG(LogError) << "MessageQueue: " << std::string(ex.what());
 		}
 	}
 }

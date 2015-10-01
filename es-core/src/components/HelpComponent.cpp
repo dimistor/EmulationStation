@@ -136,7 +136,7 @@ void HelpComponent::updatePrompts()
 
 void HelpComponent::updateTimer(TimerStatus status)
 {
-	if(Settings::getInstance()->getBool("FreePlay") || mTimer.empty())
+	if(Settings::getInstance()->isFreePlay() || mTimer.empty())
 	{
 		mTimerGrid.reset();
 		return;

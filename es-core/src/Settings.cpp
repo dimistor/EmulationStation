@@ -127,6 +127,9 @@ void Settings::saveFile()
 	//saveMap<std::string, std::string>(doc, mStringMap, "string");
 	for(auto iter = mStringMap.begin(); iter != mStringMap.end(); iter++)
 	{
+		if(std::find(settings_dont_save.begin(), settings_dont_save.end(), iter->first) != settings_dont_save.end())
+			continue;
+
 		pugi::xml_node node = doc.append_child("string");
 		node.append_attribute("name").set_value(iter->first.c_str());
 		node.append_attribute("value").set_value(iter->second.c_str());
@@ -164,7 +167,7 @@ void Settings::loadFile()
 
 bool Settings::isFreePlay()
 {
-	return getBool("FreePlay") || getString("ZmqServer").length() == 0;	
+	return getBool("FreePlay") || getString("ZmqServer").length() == 0;
 }
 
 //Print a warning message if the setting we're trying to get doesn't already exist in the map, then return the value in the map.
