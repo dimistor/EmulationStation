@@ -72,23 +72,26 @@ int MessageQueue::runSystemCommand(const std::string& cmd_utf8)
 	if(!mClient.connected())
 		return -1;
 
-		std::string reqCmd = "run_cmd";
-		zmq::message_t req(reqCmd.size());
-		memcpy(req.data(), reqCmd.data(), reqCmd.size());
-		mClient.send(req);
+	std::string reqCmd = "run_cmd";
+	zmq::message_t req1(reqCmd.size());
+	memcpy(req1.data(), reqCmd.data(), reqCmd.size());
+	zmq::message_t req2(cmd_utf8.size());
+	memcpy(req2.data(), cmd_utf8.data(), cmd_utf8.size());
+	mClient.send(req1, ZMQ_SNDMORE);
+	mClient.send(req2);
 
-		zmq::message_t rep;
-		mClient.recv(&rep);
-		std::string reply = std::string(static_cast<char*>(rep.data()), rep.size());
-		int exitcode = -1;
-		try
-		{
-			exitcode = std::stoi(reply);
-		}
-		catch(const std::invalid_argument &ex)
-		{
-			LOG(LogError) << "Error converting exit code value '" << reply << "' to integer";
-		}
+	zmq::message_t rep;
+	mClient.recv(&rep);
+	std::string reply = std::string(static_cast<char*>(rep.data()), rep.size());
+	int exitcode = -1;
+	try
+	{
+		exitcode = std::stoi(reply);
+	}
+	catch(const std::invalid_argument &ex)
+	{
+		LOG(LogError) << "Error converting exit code value '" << reply << "' to integer";
+	}
 
 	return exitcode;
 }
