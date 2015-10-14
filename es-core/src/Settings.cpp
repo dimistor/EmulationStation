@@ -59,6 +59,7 @@ void Settings::setDefaults()
 	mBoolMap["FreePlay"] = false;
 	mBoolMap["EnableSounds"] = true;
 	mBoolMap["ShowHelpPrompts"] = true;
+	mBoolMap["EnableDemoVideo"] = true;
 	mBoolMap["ScrapeRatings"] = true;
 	mBoolMap["IgnoreGamelist"] = false;
 	mBoolMap["HideConsole"] = true;

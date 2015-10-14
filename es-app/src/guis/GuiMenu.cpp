@@ -143,6 +143,12 @@ GuiMenu::GuiMenu(Window* window) : GuiComponent(window), mMenu(window, "MAIN MEN
 			s->addWithLabel("ON-SCREEN HELP", show_help);
 			s->addSaveFunc([show_help] { Settings::getInstance()->setBool("ShowHelpPrompts", show_help->getState()); });
 
+			// enable demo video
+			auto enable_demo_video = std::make_shared<SwitchComponent>(mWindow);
+			enable_demo_video->setState(Settings::getInstance()->getBool("EnableDemoVideo"));
+			s->addWithLabel("DEMO VIDEO", enable_demo_video);
+			s->addSaveFunc([enable_demo_video] { Settings::getInstance()->setBool("EnableDemoVideo", enable_demo_video->getState()); });
+
 			// quick system select (left/right in game list view)
 			auto quick_sys_select = std::make_shared<SwitchComponent>(mWindow);
 			quick_sys_select->setState(Settings::getInstance()->getBool("QuickSystemSelect"));

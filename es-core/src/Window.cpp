@@ -389,7 +389,7 @@ void Window::setHelpPrompts(const std::vector<HelpPrompt>& prompts, const HelpSt
 void Window::onSleep()
 {
 	std::string video = VideoData::getInstance()->getRandomVideo();
-	if(!video.empty())
+	if(!video.empty() && Settings::getInstance()->getBool("EnableDemoVideo"))
 	{
 		mPlayingVideo = true;
 		mDemoVideo->setVideo(video);
