@@ -305,8 +305,6 @@ int main(int argc, char* argv[])
 	int lastTime = SDL_GetTicks();
 	bool running = true;
 
-	auto mq = MessageQueue::getInstance();
-
 	while(running)
 	{
 		SDL_Event event;
@@ -334,9 +332,7 @@ int main(int argc, char* argv[])
 
 		if(window.isSleeping())
 		{
-			lastTime = SDL_GetTicks();
-			SDL_Delay(50); // this doesn't need to be accurate, we're just giving up our CPU time until something wakes us up
-			continue;
+			SDL_Delay(200); // this doesn't need to be accurate, we're just giving up our CPU time until something wakes us up
 		}
 
 		int curTime = SDL_GetTicks();

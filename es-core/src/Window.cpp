@@ -176,6 +176,15 @@ void Window::update(int deltaTime)
 
 	mTimeSinceLastInput += deltaTime;
 
+	int change = mHelp->setTimer(MessageQueue::getInstance()->getTimer());
+	if(change)
+	{
+		mTimeSinceLastInput = 0;
+		onWake(); // stop playing video
+	}
+
+	mHelp->update(deltaTime);
+
 	if(mPlayingVideo)
 	{
 		if(!mDemoVideo->isPlaying())
@@ -188,9 +197,6 @@ void Window::update(int deltaTime)
 		mDemoVideo->update(deltaTime);
 		return;
 	}
-
-	mHelp->setTimer(MessageQueue::getInstance()->getTimer());
-	mHelp->update(deltaTime);
 
 	if(peekGui())
 		peekGui()->update(deltaTime);
@@ -233,7 +239,9 @@ void Window::render()
 	}
 
 	unsigned int screensaverTime = (unsigned int)Settings::getInstance()->getInt("ScreenSaverTime");
-	if(mTimeSinceLastInput >= screensaverTime && screensaverTime != 0 && mAllowSleep)
+	unsigned int multiplier = MessageQueue::getInstance()->getTimer() > 0 ? 2 : 1;
+	// wait longer if player have unspent time
+	if(mTimeSinceLastInput >= (screensaverTime * multiplier) && screensaverTime != 0 && mAllowSleep)
 	{
 		// go to sleep
 		onSleep();

@@ -19,7 +19,7 @@ public:
 	void setPrompts(const std::vector<HelpPrompt>& prompts);
 
 	void clearTimer();
-	void setTimer(unsigned int seconds);
+	int setTimer(unsigned int seconds);
 	void setTimerStatus(TimerStatus status);
 
 	void render(const Eigen::Affine3f& parent) override;

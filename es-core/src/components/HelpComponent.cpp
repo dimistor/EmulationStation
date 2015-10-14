@@ -52,10 +52,10 @@ void HelpComponent::clearTimer()
 	updateTimer();
 }
 
-void HelpComponent::setTimer(unsigned int seconds)
+int HelpComponent::setTimer(unsigned int seconds)
 {
 	if(!mTimer.empty() && mTimerSeconds == seconds)
-		return;
+		return 0;
 
 	int s = seconds % 60;
 	int m = (int)(seconds / 60) % 60;
@@ -69,9 +69,15 @@ void HelpComponent::setTimer(unsigned int seconds)
 	mTimerSeconds = seconds;
 
 	if(increased)
+	{
 		updateTimer(TIMER_STATUS_SUCCESS);
+		return 1;
+	}
 	else
+	{
 		updateTimer();
+		return -1;
+	}
 }
 
 void HelpComponent::setTimerStatus(TimerStatus status)
